@@ -1,0 +1,142 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum Role {
+  PUBLIC
+  SPONSOR
+  TEAM
+  LEADERSHIP
+}
+
+enum ProductStatus {
+  EXPLORING
+  IN_DEVELOPMENT
+  MVP
+  LIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum Category {
+  CIVIC_TECH
+  HEALTH_TECH
+  AI_INFRASTRUCTURE
+  FINTECH
+  EDTECH
+  AGRITECH
+  CLIMATE_TECH
+  OTHER
+}
+
+enum ImpressionType {
+  INSIGHTFUL
+  HIGH_POTENTIAL
+  INTERESTED_PARTNERING
+  INTERESTED_SPONSORING
+  CONCERNS
+  SPECIFIC_EXPERTISE
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  role         Role     @default(PUBLIC)
+  avatarUrl    String?
+  organization String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownedProducts Product[]      @relation("ProductOwner")
+  teamMembers   TeamMember[]
+  impressions   Impression[]
+  briefingRequests BriefingRequest[]
+}
+
+model Product {
+  id               String        @id @default(uuid())
+  name             String
+  codename         String?
+  tagline          String
+  category         Category
+  problemStatement String
+  targetUsers      String
+  localContext     String
+  solutionOverview String
+  keyDifferentiators String
+  systemLogic      String?
+  status           ProductStatus
+  startDate        DateTime
+  lastUpdated      DateTime      @updatedAt
+  createdAt        DateTime      @default(now())
+
+  heroImageUrl     String?
+  productUrl       String?
+  ctaLabel         String?       @default("Visit Site")
+
+  // Metrics
+  usersReached     Int?
+  problemsSolved   Int?
+  geographicReach  String?
+
+  // Private fields (JSON for flexibility)
+  strategicNotes   String?
+  knownRisks       String?
+  ethicalConsiderations String?
+  integrationDependencies String?
+  fundingStatus    String?
+
+  ownerId          String
+  owner            User          @relation("ProductOwner", fields: [ownerId], references: [id])
+
+  teamMembers      TeamMember[]
+  impressions      Impression[]
+  briefingRequests BriefingRequest[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  productId String
+  userId    String
+  role      String   // lead, member, partner
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([productId, userId])
+}
+
+model Impression {
+  id          String          @id @default(uuid())
+  productId   String
+  type        ImpressionType
+  explanation String?
+  anonymous   Boolean         @default(true)
+  userId      String?
+  userSegment String?
+  geography   String?
+  createdAt   DateTime        @default(now())
+
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User?           @relation(fields: [userId], references: [id])
+}
+
+model BriefingRequest {
+  id          String   @id @default(uuid())
+  productId   String
+  userId      String
+  message     String
+  status      String   @default("pending") // pending, scheduled, completed
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+}
