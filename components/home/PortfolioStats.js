@@ -52,7 +52,7 @@ export default function PortfolioStats() {
         return (
           <motion.div
             key={stat.label}
-            className="bg-stone-50 rounded-xl p-6 border border-stone-200 card-hover"
+            className="glass-card rounded-xl p-6 border border-stone-200 card-hover"
             initial={{ scale: 0.8, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true }}

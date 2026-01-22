@@ -52,7 +52,7 @@ export default function SponsorsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen">
       {/* Hero */}
       <section className="relative h-[500px] flex items-center justify-center overflow-hidden">
         <div
@@ -94,7 +94,7 @@ export default function SponsorsPage() {
       </section>
 
       {/* Why Partner With Us */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             className="text-center mb-12"
@@ -115,7 +115,7 @@ export default function SponsorsPage() {
               return (
                 <motion.div
                   key={benefit.title}
-                  className="bg-stone-50 rounded-xl p-8 border border-stone-200 card-hover"
+                  className="glass-card rounded-xl p-8 border border-stone-200 card-hover"
                   initial={{ y: 30, opacity: 0 }}
                   whileInView={{ y: 0, opacity: 1 }}
                   viewport={{ once: true }}
@@ -134,7 +134,7 @@ export default function SponsorsPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-stone-50">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             className="text-center mb-12"
@@ -158,7 +158,7 @@ export default function SponsorsPage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.6 }}
               >
-                <div className="bg-white rounded-xl p-6 border border-stone-200 h-full">
+                <div className="glass-card rounded-xl p-6 border border-stone-200 h-full">
                   <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-4">
                     {item.step}
                   </div>
@@ -179,7 +179,7 @@ export default function SponsorsPage() {
       </section>
 
       {/* Current Sponsors (Placeholder) */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <motion.div
             initial={{ y: 30, opacity: 0 }}
@@ -196,7 +196,7 @@ export default function SponsorsPage() {
                 (partner, index) => (
                   <motion.div
                     key={partner}
-                    className="bg-stone-50 rounded-xl p-8 border border-stone-200 card-hover"
+                    className="glass-card rounded-xl p-8 border border-stone-200 card-hover"
                     initial={{ scale: 0.9, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}

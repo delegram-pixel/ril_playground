@@ -36,7 +36,7 @@ export default function ProductCard({ product, index = 0 }) {
       className="group"
     >
       <Link href={`/products/${product.id}`}>
-        <div className="bg-white rounded-xl overflow-hidden border border-stone-200 card-hover h-full flex flex-col">
+        <div className="glass-card rounded-xl overflow-hidden border border-stone-200 card-hover h-full flex flex-col">
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
             <div

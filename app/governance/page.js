@@ -37,7 +37,7 @@ export default function GovernancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 py-12">
+    <div className="min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -79,7 +79,7 @@ export default function GovernancePage() {
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <motion.div
-            className="bg-white rounded-xl p-6 border border-stone-200"
+            className="glass-card rounded-xl p-6 border border-stone-200"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -89,7 +89,7 @@ export default function GovernancePage() {
           </motion.div>
 
           <motion.div
-            className="bg-white rounded-xl p-6 border border-stone-200"
+            className="glass-card rounded-xl p-6 border border-stone-200"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -101,7 +101,7 @@ export default function GovernancePage() {
           </motion.div>
 
           <motion.div
-            className="bg-white rounded-xl p-6 border border-stone-200"
+            className="glass-card rounded-xl p-6 border border-stone-200"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -113,7 +113,7 @@ export default function GovernancePage() {
           </motion.div>
 
           <motion.div
-            className="bg-white rounded-xl p-6 border border-stone-200"
+            className="glass-card rounded-xl p-6 border border-stone-200"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -127,7 +127,7 @@ export default function GovernancePage() {
 
         {/* Products Table */}
         <motion.div
-          className="bg-white rounded-xl border border-stone-200 overflow-hidden"
+          className="glass-card rounded-xl border border-stone-200 overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}

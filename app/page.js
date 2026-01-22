@@ -72,7 +72,7 @@ export default function Home() {
       </motion.section>
 
       {/* Portfolio Snapshot */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -92,7 +92,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-stone-50">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -112,7 +112,7 @@ export default function Home() {
       </section>
 
       {/* How to Engage Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16 text-primary">
             How to Engage
@@ -120,7 +120,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <motion.div
-              className="bg-stone-50 p-8 rounded-xl border border-stone-200 card-hover"
+              className="glass-card p-8 rounded-xl border border-stone-200 card-hover"
               initial={{ y: 50, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
@@ -143,7 +143,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="bg-stone-50 p-8 rounded-xl border border-stone-200 card-hover"
+              className="glass-card p-8 rounded-xl border border-stone-200 card-hover"
               initial={{ y: 50, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
@@ -166,7 +166,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="bg-stone-50 p-8 rounded-xl border border-stone-200 card-hover"
+              className="glass-card p-8 rounded-xl border border-stone-200 card-hover"
               initial={{ y: 50, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}

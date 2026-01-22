@@ -38,9 +38,26 @@ export default function ProductProfilePage({ params }) {
     )
   }
 
-  const handleImpressionSubmit = (impression) => {
-    setUserImpressions([...userImpressions, impression])
-    alert('Thank you for your impression! Your feedback has been recorded.')
+  const handleImpressionSubmit = async (impression) => {
+    try {
+      const response = await fetch('/api/impressions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(impression),
+      })
+
+      if (response.ok) {
+        setUserImpressions([...userImpressions, impression])
+        alert('✓ Thank you for your impression! Your feedback has been recorded.')
+      } else {
+        alert('Failed to submit impression. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting impression:', error)
+      alert('An error occurred. Please try again.')
+    }
   }
 
   const getCategoryImage = (category) => {
@@ -71,7 +88,7 @@ export default function ProductProfilePage({ params }) {
   const isStale = daysSinceUpdate > 90
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <div className="relative h-[400px] overflow-hidden">
         <div
@@ -131,7 +148,7 @@ export default function ProductProfilePage({ params }) {
 
             {/* Problem & Context */}
             <motion.section
-              className="bg-white rounded-xl p-8 border border-stone-200"
+              className="glass-card rounded-xl p-8 border border-stone-200"
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
@@ -155,7 +172,7 @@ export default function ProductProfilePage({ params }) {
 
             {/* Solution Overview */}
             <motion.section
-              className="bg-white rounded-xl p-8 border border-stone-200"
+              className="glass-card rounded-xl p-8 border border-stone-200"
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
@@ -185,7 +202,7 @@ export default function ProductProfilePage({ params }) {
             {/* Metrics & Impact */}
             {(product.usersReached || product.problemsSolved || product.geographicReach) && (
               <motion.section
-                className="bg-white rounded-xl p-8 border border-stone-200"
+                className="glass-card rounded-xl p-8 border border-stone-200"
                 initial={{ y: 20, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
@@ -249,7 +266,7 @@ export default function ProductProfilePage({ params }) {
 
             {/* Status & Timeline */}
             <motion.div
-              className="bg-white rounded-xl p-6 border border-stone-200"
+              className="glass-card rounded-xl p-6 border border-stone-200"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
             >
@@ -276,7 +293,7 @@ export default function ProductProfilePage({ params }) {
 
             {/* Team */}
             <motion.div
-              className="bg-white rounded-xl p-6 border border-stone-200"
+              className="glass-card rounded-xl p-6 border border-stone-200"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}

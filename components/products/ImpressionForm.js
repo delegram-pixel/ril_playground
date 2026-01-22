@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, Flame, Handshake, DollarSign, AlertTriangle, Target, X } from 'lucide-react'
+import { Brain, TrendingUp, Handshake, DollarSign, AlertTriangle, Target, X } from 'lucide-react'
 
 export default function ImpressionForm({ productId, onSubmit }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -21,7 +21,7 @@ export default function ImpressionForm({ productId, onSubmit }) {
     {
       type: 'HIGH_POTENTIAL',
       label: 'High Potential',
-      icon: Flame,
+      icon: TrendingUp,
       color: 'text-orange-600 bg-orange-50 border-orange-200',
       hoverColor: 'hover:bg-orange-100',
     },
@@ -73,7 +73,7 @@ export default function ImpressionForm({ productId, onSubmit }) {
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-stone-200">
+    <div className="glass-card rounded-xl p-6 border border-stone-200">
       <h3 className="text-xl font-bold text-primary mb-4">Leave Your Impression</h3>
       <p className="text-gray-600 mb-6 text-sm">
         Share structured feedback to help us understand what resonates and what needs attention.
@@ -112,7 +112,7 @@ export default function ImpressionForm({ productId, onSubmit }) {
             onClick={() => setIsOpen(false)}
           >
             <motion.div
-              className="bg-white rounded-xl p-6 max-w-md w-full"
+              className="glass-card rounded-xl p-6 max-w-md w-full"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}

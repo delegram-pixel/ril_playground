@@ -28,7 +28,7 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen">
       {/* Hero */}
       <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
         <div
@@ -53,7 +53,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12">
             <motion.div
@@ -96,7 +96,7 @@ export default function AboutPage() {
       </section>
 
       {/* Our Approach */}
-      <section className="py-20 bg-stone-50">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             className="text-center mb-12"
@@ -116,7 +116,7 @@ export default function AboutPage() {
               return (
                 <motion.div
                   key={value.title}
-                  className="bg-white rounded-xl p-8 border border-stone-200 card-hover"
+                  className="glass-card rounded-xl p-8 border border-stone-200 card-hover"
                   initial={{ y: 30, opacity: 0 }}
                   whileInView={{ y: 0, opacity: 1 }}
                   viewport={{ once: true }}
@@ -135,7 +135,7 @@ export default function AboutPage() {
       </section>
 
       {/* What Makes Us Different */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             className="text-center mb-12"

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Brain, Flame, Handshake, DollarSign, AlertTriangle, Target } from 'lucide-react'
+import { Brain, TrendingUp, Handshake, DollarSign, AlertTriangle, Target } from 'lucide-react'
 
 export default function ImpressionSummary({ impressions }) {
   const impressionConfig = {
@@ -12,7 +12,7 @@ export default function ImpressionSummary({ impressions }) {
     },
     HIGH_POTENTIAL: {
       label: 'High Potential',
-      icon: Flame,
+      icon: TrendingUp,
       color: 'text-orange-600 bg-orange-50',
     },
     INTERESTED_PARTNERING: {
@@ -45,7 +45,7 @@ export default function ImpressionSummary({ impressions }) {
 
   return (
     <motion.section
-      className="bg-white rounded-xl p-8 border border-stone-200"
+      className="glass-card rounded-xl p-8 border border-stone-200"
       initial={{ y: 20, opacity: 0 }}
       whileInView={{ y: 0, opacity: 1 }}
       viewport={{ once: true }}

@@ -28,7 +28,7 @@ export default function ProductFilters({ filters, onFilterChange, onSearch }) {
 
   return (
     <motion.div
-      className="bg-white rounded-xl p-6 border border-stone-200 mb-8"
+      className="glass-card rounded-xl p-6 border border-stone-200 mb-8"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}

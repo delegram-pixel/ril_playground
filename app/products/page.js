@@ -33,7 +33,7 @@ export default function ProductsPage() {
   })
 
   return (
-    <div className="min-h-screen py-12 bg-stone-50">
+    <div className="min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Page Header */}
         <motion.div
