@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, TrendingUp, Handshake, DollarSign, AlertTriangle, Target, X } from 'lucide-react'
+import { Brain, TrendingUp, HandHelping, DollarSign, AlertTriangle, Target, X } from 'lucide-react'
 
 export default function ImpressionForm({ productId, onSubmit }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -28,7 +28,7 @@ export default function ImpressionForm({ productId, onSubmit }) {
     {
       type: 'INTERESTED_PARTNERING',
       label: 'Interested in Partnering',
-      icon: Handshake,
+      icon: HandHelping,
       color: 'text-blue-600 bg-blue-50 border-blue-200',
       hoverColor: 'hover:bg-blue-100',
     },

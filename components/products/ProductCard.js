@@ -91,10 +91,16 @@ export default function ProductCard({ product, index = 0 }) {
               {/* CTA Button */}
               {product.productUrl && (
                 <div className="pt-4">
-                  <div className="inline-flex items-center gap-2 text-teal font-medium hover:text-teal-dark transition-colors">
+                  <a
+                    href={product.productUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-2 text-teal font-medium hover:text-teal-dark transition-colors"
+                  >
                     {product.ctaLabel || 'Visit Site'}
                     <ExternalLink className="w-4 h-4" />
-                  </div>
+                  </a>
                 </div>
               )}
             </div>

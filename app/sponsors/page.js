@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { TrendingUp, MessageSquare, Eye, Lock, CheckCircle, ArrowRight } from 'lucide-react'
+import BriefingRequestModal from '@/components/sponsors/BriefingRequestModal'
 
 export default function SponsorsPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const benefits = [
     {
       icon: Eye,
@@ -85,7 +88,10 @@ export default function SponsorsPage() {
               Explore Products
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <button className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-2 border-white px-8 py-4 rounded-lg text-lg font-medium transition-all">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-2 border-white px-8 py-4 rounded-lg text-lg font-medium transition-all"
+            >
               Request Sponsor Access
               <Lock className="w-5 h-5" />
             </button>
@@ -240,6 +246,11 @@ export default function SponsorsPage() {
           </motion.div>
         </div>
       </section>
+
+      <BriefingRequestModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Brain, TrendingUp, Handshake, DollarSign, AlertTriangle, Target } from 'lucide-react'
+import { Brain, TrendingUp, HandHelping, DollarSign, AlertTriangle, Target } from 'lucide-react'
 
 export default function ImpressionSummary({ impressions }) {
   const impressionConfig = {
@@ -17,7 +17,7 @@ export default function ImpressionSummary({ impressions }) {
     },
     INTERESTED_PARTNERING: {
       label: 'Interested in Partnering',
-      icon: Handshake,
+      icon: HandHelping,
       color: 'text-blue-600 bg-blue-50',
     },
     INTERESTED_SPONSORING: {
