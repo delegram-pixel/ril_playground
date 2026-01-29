@@ -10,18 +10,40 @@ import {
   TrendingUp,
   MapPin,
   ExternalLink,
-  AlertTriangle,
+
   Clock,
 } from 'lucide-react'
-import { sampleProducts, sampleImpressions } from '@/lib/sampleData'
+import {
+  sampleProducts,
+  sampleImpressions,
+  getProductMedia,
+  getProductLinks,
+  getProductChangelog,
+  getProductTechStack,
+  getProductRelated,
+} from '@/lib/sampleData'
 import StatusBadge from '@/components/products/StatusBadge'
 import CategoryBadge from '@/components/products/CategoryBadge'
 import ImpressionForm from '@/components/products/ImpressionForm'
 import ImpressionSummary from '@/components/products/ImpressionSummary'
+import MediaGallery from '@/components/gallery/MediaGallery'
+import ChangelogTimeline from '@/components/changelog/ChangelogTimeline'
+import TeamSection from '@/components/team/TeamSection'
+import ShareButtons from '@/components/share/ShareButtons'
+import PDFExport from '@/components/share/PDFExport'
+import RelatedProducts from '@/components/products/RelatedProducts'
+import { Github, ExternalLink as LinkIcon, FileText } from 'lucide-react'
 
 export default function ProductProfilePage({ params }) {
   const product = sampleProducts.find((p) => p.id === params.id)
   const impressions = sampleImpressions.filter((i) => i.productId === params.id)
+
+  // Get related data
+  const media = getProductMedia(params.id)
+  const links = getProductLinks(params.id)
+  const changelog = getProductChangelog(params.id)
+  const techStack = getProductTechStack(params.id)
+  const relatedProducts = getProductRelated(params.id)
 
   const [userImpressions, setUserImpressions] = useState([])
 
@@ -85,7 +107,7 @@ export default function ProductProfilePage({ params }) {
   const daysSinceUpdate = Math.floor(
     (new Date() - new Date(product.lastUpdated)) / (1000 * 60 * 60 * 24)
   )
-  const isStale = daysSinceUpdate > 90
+
 
   return (
     <div className="min-h-screen">
@@ -129,22 +151,7 @@ export default function ProductProfilePage({ params }) {
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Warnings */}
-            {isStale && (
-              <motion.div
-                className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg flex items-start gap-3"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-              >
-                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-yellow-800 mb-1">Stale Product</h4>
-                  <p className="text-sm text-yellow-700">
-                    This product hasn't been updated in {daysSinceUpdate} days. Information may be
-                    outdated.
-                  </p>
-                </div>
-              </motion.div>
-            )}
+
 
             {/* Problem & Context */}
             <motion.section
@@ -199,6 +206,73 @@ export default function ProductProfilePage({ params }) {
               </div>
             </motion.section>
 
+            {/* Media Gallery */}
+            <MediaGallery media={media} />
+
+            {/* Product Links */}
+            {links.length > 0 && (
+              <motion.section
+                className="glass-card rounded-xl p-8 border border-stone-200"
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-2xl font-bold text-primary mb-6">Links & Resources</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {links.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-4 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors group"
+                    >
+                      <div className="w-12 h-12 bg-teal rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                        {link.type === 'GITHUB' ? (
+                          <Github className="w-6 h-6" />
+                        ) : link.type === 'DOCS' ? (
+                          <FileText className="w-6 h-6" />
+                        ) : (
+                          <LinkIcon className="w-6 h-6" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 group-hover:text-teal transition-colors">
+                          {link.label}
+                        </h4>
+                        {link.description && (
+                          <p className="text-sm text-gray-600">{link.description}</p>
+                        )}
+                      </div>
+                      <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-teal transition-colors" />
+                    </a>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
+            {/* Technology Stack */}
+            {techStack.length > 0 && (
+              <motion.section
+                className="glass-card rounded-xl p-8 border border-stone-200"
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-2xl font-bold text-primary mb-6">Technology Stack</h2>
+                <div className="flex flex-wrap gap-2">
+                  {techStack.map((tech) => (
+                    <span
+                      key={tech.id}
+                      className="px-3 py-2 bg-teal/10 text-teal rounded-lg text-sm font-medium"
+                    >
+                      {tech.technology}
+                    </span>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
             {/* Metrics & Impact */}
             {(product.usersReached || product.problemsSolved || product.geographicReach) && (
               <motion.section
@@ -244,6 +318,28 @@ export default function ProductProfilePage({ params }) {
 
             {/* Impression Form */}
             <ImpressionForm productId={product.id} onSubmit={handleImpressionSubmit} />
+
+            {/* Product Journey / Changelog */}
+            <ChangelogTimeline changelog={changelog} />
+
+            {/* Team Section */}
+            <TeamSection team={product.team} owner={product.owner} />
+
+            {/* Share & Export */}
+            <motion.section
+              className="glass-card rounded-xl p-6 border border-stone-200"
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <ShareButtons product={product} />
+                <PDFExport product={product} />
+              </div>
+            </motion.section>
+
+            {/* Related Products */}
+            <RelatedProducts relatedProducts={relatedProducts} />
           </div>
 
           {/* Right Column - Sidebar */}
@@ -300,20 +396,40 @@ export default function ProductProfilePage({ params }) {
             >
               <h3 className="font-bold text-primary mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Product Lead
+                Team
               </h3>
-              <div className="flex items-center gap-3">
-                {product.owner.avatarUrl && (
-                  <img
-                    src={product.owner.avatarUrl}
-                    alt={product.owner.name}
-                    className="w-12 h-12 rounded-full"
-                  />
+              <div className="space-y-4">
+                {product.team ? (
+                  product.team.map((member, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <img
+                        src={member.avatarUrl}
+                        alt={member.name}
+                        className="w-10 h-10 rounded-full object-cover border border-stone-100"
+                      />
+                      <div>
+                        <div className="font-semibold text-gray-800">{member.name}</div>
+                        <div className="text-xs text-teal font-medium uppercase tracking-wider">
+                          {member.role}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center gap-3">
+                    {product.owner.avatarUrl && (
+                      <img
+                        src={product.owner.avatarUrl}
+                        alt={product.owner.name}
+                        className="w-12 h-12 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <div className="font-semibold">{product.owner.name}</div>
+                      <div className="text-sm text-gray-500">Product Lead</div>
+                    </div>
+                  </div>
                 )}
-                <div>
-                  <div className="font-semibold">{product.owner.name}</div>
-                  <div className="text-sm text-gray-500">{product.owner.email}</div>
-                </div>
               </div>
             </motion.div>
           </div>

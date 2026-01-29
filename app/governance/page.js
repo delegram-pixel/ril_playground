@@ -6,9 +6,12 @@ import { AlertTriangle, Clock, UserX, Plus, Edit, Trash2 } from 'lucide-react'
 import { sampleProducts } from '@/lib/sampleData'
 import StatusBadge from '@/components/products/StatusBadge'
 import CategoryBadge from '@/components/products/CategoryBadge'
+import ProductForm from '@/components/governance/ProductForm'
 
 export default function GovernancePage() {
   const [view, setView] = useState('overview') // overview, create, edit
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   // Calculate governance metrics
   const staleProducts = sampleProducts.filter((p) => {
@@ -50,7 +53,13 @@ export default function GovernancePage() {
               <h1 className="text-5xl font-bold text-primary mb-2">Governance Dashboard</h1>
               <p className="text-gray-600">Internal portfolio management and oversight</p>
             </div>
-            <button className="inline-flex items-center gap-2 bg-teal text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-dark transition-all hover:shadow-lg">
+            <button
+              onClick={() => {
+                setSelectedProduct(null)
+                setIsFormOpen(true)
+              }}
+              className="inline-flex items-center gap-2 bg-teal text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-dark transition-all hover:shadow-lg"
+            >
               <Plus className="w-5 h-5" />
               New Product
             </button>
@@ -228,12 +237,21 @@ export default function GovernancePage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => {
+                            setSelectedProduct(product)
+                            setIsFormOpen(true)
+                          }}
                           className="p-2 text-gray-600 hover:text-teal hover:bg-stone-100 rounded-lg transition-all"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => {
+                            if (confirm(`Archive ${product.name}? This action can be reversed.`)) {
+                              alert('Archive functionality would be implemented here')
+                            }
+                          }}
                           className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                           title="Archive"
                         >
@@ -280,6 +298,16 @@ export default function GovernancePage() {
           </ul>
         </motion.div>
       </div>
+
+      {/* Product Form Modal */}
+      <ProductForm
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false)
+          setSelectedProduct(null)
+        }}
+        product={selectedProduct}
+      />
     </div>
   )
 }

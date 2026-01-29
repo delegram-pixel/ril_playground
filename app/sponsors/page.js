@@ -231,7 +231,10 @@ export default function SponsorsPage() {
               and direct communication with our team.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <button className="inline-flex items-center gap-2 bg-brown hover:bg-brown-dark text-white px-8 py-4 rounded-lg text-lg font-medium transition-all hover:shadow-2xl hover:scale-105">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 bg-brown hover:bg-brown-dark text-white px-8 py-4 rounded-lg text-lg font-medium transition-all hover:shadow-2xl hover:scale-105"
+              >
                 Request Sponsor Access
                 <Lock className="w-5 h-5" />
               </button>
