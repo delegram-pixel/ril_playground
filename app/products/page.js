@@ -1,14 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { sampleProducts } from '@/lib/sampleData'
+import { createClient } from '@/lib/supabase/client'
 import ProductCard from '@/components/products/ProductCard'
 import ProductFilters from '@/components/products/ProductFilters'
+import { Loader2 } from 'lucide-react'
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState({ category: '', status: '' })
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true)
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          owner:users!owner_id(id, name, email, avatar_url)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setProducts(data || [])
+    } catch (err) {
+      console.error('Error fetching products:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({ ...prev, [filterType]: value }))
@@ -19,15 +48,15 @@ export default function ProductsPage() {
   }
 
   // Filter products
-  const filteredProducts = sampleProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesCategory = !filters.category || product.category === filters.category
     const matchesStatus = !filters.status || product.status === filters.status
     const matchesSearch =
       !searchQuery ||
       product.name.toLowerCase().includes(searchQuery) ||
-      product.tagline.toLowerCase().includes(searchQuery) ||
-      product.problemStatement.toLowerCase().includes(searchQuery) ||
-      product.solutionOverview.toLowerCase().includes(searchQuery)
+      product.tagline?.toLowerCase().includes(searchQuery) ||
+      product.problemStatement?.toLowerCase().includes(searchQuery) ||
+      product.solutionOverview?.toLowerCase().includes(searchQuery)
 
     return matchesCategory && matchesStatus && matchesSearch
   })
@@ -56,23 +85,29 @@ export default function ProductsPage() {
         />
 
         {/* Results Count */}
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <p className="text-gray-600">
-            Showing <span className="font-semibold text-primary">{filteredProducts.length}</span> of{' '}
-            <span className="font-semibold">{sampleProducts.length}</span> products
-          </p>
-        </motion.div>
+        {!isLoading && (
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <p className="text-gray-600">
+              Showing <span className="font-semibold text-primary">{filteredProducts.length}</span> of{' '}
+              <span className="font-semibold">{products.length}</span> products
+            </p>
+          </motion.div>
+        )}
 
         {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-8 h-8 text-teal animate-spin" />
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
+              <ProductCard key={product.id} product={product} index={index} variant="vertical" />
             ))}
           </div>
         ) : (

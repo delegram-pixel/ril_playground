@@ -197,14 +197,6 @@ export async function POST(request) {
           hero_image_url: body.heroImageUrl || null,
           product_url: body.productUrl || null,
           cta_label: body.ctaLabel || 'Visit Site',
-          users_reached: body.usersReached ? parseInt(body.usersReached) : null,
-          problems_solved: body.problemsSolved ? parseInt(body.problemsSolved) : null,
-          geographic_reach: body.geographicReach || null,
-          country: body.country || null,
-          region: body.region || null,
-          impact_score: body.impactScore ? parseInt(body.impactScore) : null,
-          funding_stage: body.fundingStage || null,
-          funding_amount: body.fundingAmount ? parseFloat(body.fundingAmount) : null,
           owner_id: ownerId,
         })
         .select(`
@@ -237,20 +229,37 @@ export async function POST(request) {
       }
 
       // Insert media items if provided
-      if (body.mediaItems && body.mediaItems.trim()) {
-        const mediaUrls = body.mediaItems
-          .split('\n')
-          .map(url => url.trim())
-          .filter(url => url.length > 0)
+      if (body.mediaItems) {
+        let mediaData = []
 
-        if (mediaUrls.length > 0) {
-          const mediaData = mediaUrls.map((url, index) => ({
+        // Handle new format (array of objects)
+        if (Array.isArray(body.mediaItems)) {
+          mediaData = body.mediaItems
+            .filter(item => item.url && item.url.trim())
+            .map((item, index) => ({
+              product_id: productId,
+              type: item.type || 'IMAGE',
+              url: item.url.trim(),
+              title: item.title || null,
+              display_order: index,
+            }))
+        }
+        // Handle old format (string with newlines) for backwards compatibility
+        else if (typeof body.mediaItems === 'string' && body.mediaItems.trim()) {
+          const mediaUrls = body.mediaItems
+            .split('\n')
+            .map(url => url.trim())
+            .filter(url => url.length > 0)
+
+          mediaData = mediaUrls.map((url, index) => ({
             product_id: productId,
             type: 'IMAGE',
             url: url,
             display_order: index,
           }))
+        }
 
+        if (mediaData.length > 0) {
           await supabase
             .from('product_media')
             .insert(mediaData)

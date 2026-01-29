@@ -1,151 +1,223 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import Lightbox from 'yet-another-react-lightbox'
-import 'yet-another-react-lightbox/styles.css'
-import { Play, Image as ImageIcon, FileText } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
 
 export default function MediaGallery({ media = [] }) {
-  const [lightboxOpen, setLightboxOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const carouselRef = useRef(null)
 
   if (!media || media.length === 0) {
     return null
   }
 
-  const images = media.filter((m) => m.type === 'IMAGE' || m.type === 'SCREENSHOT')
-  const videos = media.filter((m) => m.type === 'VIDEO')
-  const diagrams = media.filter((m) => m.type === 'DIAGRAM')
+  const allMedia = media.sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+  const totalSlides = allMedia.length
+  const visibleSlides = Math.min(2, totalSlides) // Show 2 at a time on desktop
 
-  const lightboxSlides = images.map((img) => ({
-    src: img.url,
-    title: img.title,
-    description: img.description,
-  }))
+  const scrollToIndex = (index) => {
+    if (carouselRef.current) {
+      const slideWidth = carouselRef.current.offsetWidth / visibleSlides
+      carouselRef.current.scrollTo({
+        left: index * slideWidth,
+        behavior: 'smooth'
+      })
+    }
+    setCurrentIndex(index)
+  }
 
-  const getMediaIcon = (type) => {
-    switch (type) {
-      case 'VIDEO':
-        return <Play className="w-6 h-6" />
-      case 'DIAGRAM':
-        return <FileText className="w-6 h-6" />
-      default:
-        return <ImageIcon className="w-6 h-6" />
+  const nextSlide = () => {
+    const next = currentIndex + 1
+    if (next < totalSlides) {
+      scrollToIndex(next)
+    }
+  }
+
+  const prevSlide = () => {
+    const prev = currentIndex - 1
+    if (prev >= 0) {
+      scrollToIndex(prev)
     }
   }
 
   const openLightbox = (index) => {
-    setCurrentIndex(index)
+    setLightboxIndex(index)
     setLightboxOpen(true)
   }
 
+  const isVideo = (item) => item.type === 'VIDEO' || item.url?.includes('youtube') || item.url?.includes('vimeo')
+
   return (
     <motion.section
-      className="glass-card rounded-xl p-8 border border-stone-200"
+      className="mb-8"
       initial={{ y: 20, opacity: 0 }}
       whileInView={{ y: 0, opacity: 1 }}
       viewport={{ once: true }}
     >
-      <h2 className="text-2xl font-bold text-primary mb-6">Media Gallery</h2>
+      {/* Carousel Container */}
+      <div className="relative group">
+        {/* Navigation Arrows */}
+        {currentIndex > 0 && (
+          <button
+            onClick={prevSlide}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 transition-all opacity-0 group-hover:opacity-100"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
 
-      {/* Images Grid */}
-      {images.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Screenshots & Images</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {images.map((img, idx) => (
-              <motion.div
-                key={img.id}
-                className="relative aspect-video bg-stone-100 rounded-lg overflow-hidden cursor-pointer group"
-                whileHover={{ scale: 1.05 }}
-                onClick={() => openLightbox(idx)}
-              >
-                <img
-                  src={img.thumbnailUrl || img.url}
-                  alt={img.title || 'Product screenshot'}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                {img.title && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <p className="text-white text-sm font-medium">{img.title}</p>
+        {currentIndex < totalSlides - 1 && (
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 transition-all opacity-0 group-hover:opacity-100"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Carousel Track */}
+        <div
+          ref={carouselRef}
+          className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {allMedia.map((item, idx) => (
+            <div
+              key={item.id || idx}
+              className="flex-shrink-0 w-full md:w-[calc(50%-8px)] snap-start cursor-pointer"
+              onClick={() => openLightbox(idx)}
+            >
+              <div className="relative aspect-[16/10] bg-gradient-to-br from-indigo-100 via-purple-50 to-blue-100 rounded-2xl overflow-hidden">
+                {isVideo(item) ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <img
+                      src={item.thumbnail_url || item.thumbnailUrl || item.url}
+                      alt={item.title || 'Video thumbnail'}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
+                        <Play className="w-8 h-8 text-gray-800 ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={item.url}
+                    alt={item.title || 'Product screenshot'}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                )}
+
+                {/* Caption overlay */}
+                {item.title && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                    <p className="text-white text-sm font-medium">{item.title}</p>
                   </div>
                 )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Videos */}
-      {videos.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Demo Videos</h3>
-          <div className="space-y-4">
-            {videos.map((video) => (
-              <div key={video.id} className="bg-stone-50 rounded-lg p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-teal rounded-lg flex items-center justify-center text-white flex-shrink-0">
-                  <Play className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-800">{video.title}</h4>
-                  {video.description && (
-                    <p className="text-sm text-gray-600">{video.description}</p>
-                  )}
-                </div>
-                <a
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-teal text-white rounded-lg hover:bg-teal-dark transition-colors text-sm font-medium"
-                >
-                  Watch
-                </a>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* Diagrams */}
-      {diagrams.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Architecture & Diagrams</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            {diagrams.map((diagram) => (
-              <div
-                key={diagram.id}
-                className="bg-stone-50 rounded-lg p-4 flex flex-col gap-3"
-              >
-                <div className="aspect-video bg-white rounded-lg overflow-hidden">
-                  <img
-                    src={diagram.url}
-                    alt={diagram.title || 'System diagram'}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-800">{diagram.title}</h4>
-                  {diagram.description && (
-                    <p className="text-sm text-gray-600 mt-1">{diagram.description}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Dot Indicators */}
+      {totalSlides > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          {allMedia.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => scrollToIndex(idx)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                idx === currentIndex
+                  ? 'bg-red-500 w-2'
+                  : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+            />
+          ))}
         </div>
       )}
 
       {/* Lightbox */}
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        index={currentIndex}
-        slides={lightboxSlides}
-      />
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            onClick={() => setLightboxOpen(false)}
+            className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {lightboxIndex > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setLightboxIndex(lightboxIndex - 1)
+              }}
+              className="absolute left-4 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            >
+              <ChevronLeft className="w-8 h-8" />
+            </button>
+          )}
+
+          {lightboxIndex < totalSlides - 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setLightboxIndex(lightboxIndex + 1)
+              }}
+              className="absolute right-4 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            >
+              <ChevronRight className="w-8 h-8" />
+            </button>
+          )}
+
+          <div className="max-w-5xl max-h-[90vh] p-4" onClick={(e) => e.stopPropagation()}>
+            {isVideo(allMedia[lightboxIndex]) ? (
+              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                <iframe
+                  src={allMedia[lightboxIndex].url}
+                  className="w-full h-full"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <img
+                src={allMedia[lightboxIndex].url}
+                alt={allMedia[lightboxIndex].title || 'Product screenshot'}
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              />
+            )}
+            {allMedia[lightboxIndex].title && (
+              <p className="text-white text-center mt-4 text-lg">
+                {allMedia[lightboxIndex].title}
+              </p>
+            )}
+          </div>
+
+          {/* Lightbox dots */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+            {allMedia.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setLightboxIndex(idx)
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  idx === lightboxIndex ? 'bg-white' : 'bg-white/40'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </motion.section>
   )
 }

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import ProductCard from '@/components/products/ProductCard'
 import { Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Home() {
   const [products, setProducts] = useState([])
@@ -17,10 +17,18 @@ export default function Home() {
   const fetchProducts = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/products')
-      if (!response.ok) throw new Error('Failed to fetch products')
-      const data = await response.json()
-      setProducts(data)
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          owner:users!owner_id(id, name, email, avatar_url)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setProducts(data || [])
     } catch (err) {
       console.error('Error fetching products:', err)
     } finally {

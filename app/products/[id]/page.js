@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -10,18 +10,10 @@ import {
   TrendingUp,
   MapPin,
   ExternalLink,
-
   Clock,
+  Loader2,
 } from 'lucide-react'
-import {
-  sampleProducts,
-  sampleImpressions,
-  getProductMedia,
-  getProductLinks,
-  getProductChangelog,
-  getProductTechStack,
-  getProductRelated,
-} from '@/lib/sampleData'
+import { createClient } from '@/lib/supabase/client'
 import StatusBadge from '@/components/products/StatusBadge'
 import CategoryBadge from '@/components/products/CategoryBadge'
 import ImpressionForm from '@/components/products/ImpressionForm'
@@ -35,17 +27,116 @@ import RelatedProducts from '@/components/products/RelatedProducts'
 import { Github, ExternalLink as LinkIcon, FileText } from 'lucide-react'
 
 export default function ProductProfilePage({ params }) {
-  const product = sampleProducts.find((p) => p.id === params.id)
-  const impressions = sampleImpressions.filter((i) => i.productId === params.id)
-
-  // Get related data
-  const media = getProductMedia(params.id)
-  const links = getProductLinks(params.id)
-  const changelog = getProductChangelog(params.id)
-  const techStack = getProductTechStack(params.id)
-  const relatedProducts = getProductRelated(params.id)
-
+  const [product, setProduct] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [impressions, setImpressions] = useState([])
+  const [media, setMedia] = useState([])
+  const [links, setLinks] = useState([])
+  const [changelog, setChangelog] = useState([])
+  const [techStack, setTechStack] = useState([])
+  const [relatedProducts, setRelatedProducts] = useState([])
   const [userImpressions, setUserImpressions] = useState([])
+
+  useEffect(() => {
+    fetchProduct()
+  }, [params.id])
+
+  // Transform Supabase snake_case to camelCase
+  const transformProduct = (data) => {
+    if (!data) return null
+    return {
+      id: data.id,
+      name: data.name,
+      codename: data.codename,
+      tagline: data.tagline,
+      category: data.category,
+      problemStatement: data.problem_statement,
+      targetUsers: data.target_users,
+      localContext: data.local_context,
+      solutionOverview: data.solution_overview,
+      keyDifferentiators: data.key_differentiators,
+      systemLogic: data.system_logic,
+      status: data.status,
+      startDate: data.start_date || data.created_at,
+      lastUpdated: data.last_updated || data.updated_at || data.created_at,
+      createdAt: data.created_at,
+      heroImageUrl: data.hero_image_url,
+      productUrl: data.product_url,
+      ctaLabel: data.cta_label,
+      usersReached: data.users_reached,
+      problemsSolved: data.problems_solved,
+      geographicReach: data.geographic_reach,
+      owner: data.owner ? {
+        id: data.owner.id,
+        name: data.owner.name,
+        email: data.owner.email,
+        avatarUrl: data.owner.avatar_url,
+      } : null,
+      team: data.team,
+    }
+  }
+
+  const fetchProduct = async () => {
+    try {
+      setIsLoading(true)
+      const supabase = createClient()
+
+      // Fetch product with owner from users table
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          owner:users!owner_id(id, name, email, avatar_url)
+        `)
+        .eq('id', params.id)
+        .single()
+
+      if (error) throw error
+      setProduct(transformProduct(data))
+
+      // Fetch related data in parallel if product exists
+      if (data) {
+        const [mediaRes, linksRes, techRes, teamRes] = await Promise.all([
+          supabase.from('product_media').select('*').eq('product_id', params.id).order('display_order'),
+          supabase.from('product_links').select('*').eq('product_id', params.id),
+          supabase.from('product_tech_stack').select('*').eq('product_id', params.id),
+          supabase.from('team_members').select(`
+            id,
+            role,
+            user:users(id, name, email, avatar_url)
+          `).eq('product_id', params.id),
+        ])
+
+        setMedia(mediaRes.data || [])
+        setLinks(linksRes.data || [])
+        setTechStack(techRes.data || [])
+
+        // Transform team members
+        if (teamRes.data) {
+          const transformedTeam = teamRes.data.map(tm => ({
+            id: tm.id,
+            name: tm.user?.name,
+            email: tm.user?.email,
+            avatarUrl: tm.user?.avatar_url,
+            role: tm.role,
+          }))
+          setProduct(prev => prev ? { ...prev, team: transformedTeam } : null)
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching product:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-teal animate-spin" />
+      </div>
+    )
+  }
 
   if (!product) {
     return (
@@ -399,7 +490,7 @@ export default function ProductProfilePage({ params }) {
                 Team
               </h3>
               <div className="space-y-4">
-                {product.team ? (
+                {product.team && product.team.length > 0 ? (
                   product.team.map((member, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <img
@@ -415,7 +506,7 @@ export default function ProductProfilePage({ params }) {
                       </div>
                     </div>
                   ))
-                ) : (
+                ) : product.owner ? (
                   <div className="flex items-center gap-3">
                     {product.owner.avatarUrl && (
                       <img
@@ -429,6 +520,8 @@ export default function ProductProfilePage({ params }) {
                       <div className="text-sm text-gray-500">Product Lead</div>
                     </div>
                   </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">No team assigned yet</p>
                 )}
               </div>
             </motion.div>

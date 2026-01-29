@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { X, Plus, Trash2, GripVertical, Image, Video } from 'lucide-react'
 
 export default function ProductForm({ isOpen, onClose, product = null }) {
   const isEditing = !!product
@@ -33,8 +33,8 @@ export default function ProductForm({ isOpen, onClose, product = null }) {
       fundingStage: '',
       fundingAmount: '',
       techStack: '',
-      teamMembers: [],
-      mediaItems: [],
+      teamMembers: '',
+      mediaItems: [], // Array of { url, type, title }
       owner: {
         name: '',
         email: '',
@@ -544,23 +544,119 @@ export default function ProductForm({ isOpen, onClose, product = null }) {
                   {/* Media Gallery */}
                   <div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-700 mb-4">Media Gallery</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Screenshot/Image URLs
-                        </label>
-                        <textarea
-                          value={formData.mediaItems}
-                          onChange={(e) => setFormData({ ...formData, mediaItems: e.target.value })}
-                          className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal outline-none resize-none"
-                          rows={4}
-                          placeholder="Enter image URLs, one per line:&#10;https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Enter one image URL per line. These will appear in the product gallery.
-                        </p>
-                      </div>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Add screenshots, images, or video URLs. These will appear in a carousel on the product page.
+                    </p>
+
+                    {/* Media Items List */}
+                    <div className="space-y-3 mb-4">
+                      {(Array.isArray(formData.mediaItems) ? formData.mediaItems : []).map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex gap-3 items-start p-3 bg-stone-50 rounded-lg border border-stone-200"
+                        >
+                          <div className="text-gray-400 cursor-move mt-2">
+                            <GripVertical className="w-4 h-4" />
+                          </div>
+
+                          {/* Preview */}
+                          <div className="w-20 h-14 bg-stone-200 rounded overflow-hidden flex-shrink-0">
+                            {item.url ? (
+                              item.type === 'VIDEO' ? (
+                                <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                                  <Video className="w-6 h-6 text-white" />
+                                </div>
+                              ) : (
+                                <img
+                                  src={item.url}
+                                  alt={item.title || 'Media preview'}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none'
+                                  }}
+                                />
+                              )
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Image className="w-6 h-6 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Fields */}
+                          <div className="flex-1 space-y-2">
+                            <div className="flex gap-2">
+                              <input
+                                type="url"
+                                value={item.url}
+                                onChange={(e) => {
+                                  const newMedia = [...formData.mediaItems]
+                                  newMedia[index].url = e.target.value
+                                  setFormData({ ...formData, mediaItems: newMedia })
+                                }}
+                                className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal outline-none text-sm"
+                                placeholder="https://example.com/image.jpg"
+                              />
+                              <select
+                                value={item.type}
+                                onChange={(e) => {
+                                  const newMedia = [...formData.mediaItems]
+                                  newMedia[index].type = e.target.value
+                                  setFormData({ ...formData, mediaItems: newMedia })
+                                }}
+                                className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal outline-none text-sm"
+                              >
+                                <option value="IMAGE">Image</option>
+                                <option value="SCREENSHOT">Screenshot</option>
+                                <option value="VIDEO">Video</option>
+                              </select>
+                            </div>
+                            <input
+                              type="text"
+                              value={item.title || ''}
+                              onChange={(e) => {
+                                const newMedia = [...formData.mediaItems]
+                                newMedia[index].title = e.target.value
+                                setFormData({ ...formData, mediaItems: newMedia })
+                              }}
+                              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal outline-none text-sm"
+                              placeholder="Caption (optional)"
+                            />
+                          </div>
+
+                          {/* Delete */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newMedia = formData.mediaItems.filter((_, i) => i !== index)
+                              setFormData({ ...formData, mediaItems: newMedia })
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
+
+                    {/* Add Media Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentMedia = Array.isArray(formData.mediaItems) ? formData.mediaItems : []
+                        setFormData({
+                          ...formData,
+                          mediaItems: [
+                            ...currentMedia,
+                            { url: '', type: 'IMAGE', title: '' }
+                          ]
+                        })
+                      }}
+                      className="w-full py-3 border-2 border-dashed border-stone-300 rounded-lg text-gray-500 hover:border-teal hover:text-teal transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-5 h-5" />
+                      Add Media Item
+                    </button>
                   </div>
 
                   {/* Team Members */}

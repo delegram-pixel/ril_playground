@@ -7,6 +7,11 @@ import StatusBadge from './StatusBadge'
 import CategoryBadge from './CategoryBadge'
 
 export default function ProductCard({ product, index = 0, variant = 'horizontal' }) {
+  // Handle both camelCase and snake_case from different data sources
+  const heroImage = product.heroImageUrl || product.hero_image_url
+  const productUrl = product.productUrl || product.product_url
+  const ctaLabel = product.ctaLabel || product.cta_label
+
   const getCategoryImage = (category) => {
     const images = {
       CIVIC_TECH: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80',
@@ -36,7 +41,7 @@ export default function ProductCard({ product, index = 0, variant = 'horizontal'
                 <div
                   className="w-20 h-20 rounded-md bg-cover bg-center"
                   style={{
-                    backgroundImage: `url(${product.heroImageUrl || getCategoryImage(product.category)})`,
+                    backgroundImage: `url(${heroImage || getCategoryImage(product.category)})`,
                   }}
                 />
               </div>
@@ -59,9 +64,9 @@ export default function ProductCard({ product, index = 0, variant = 'horizontal'
 
                   {/* Action */}
                   <div className="flex-shrink-0 flex items-center gap-2">
-                    {product.productUrl && (
+                    {productUrl && (
                       <a
-                        href={product.productUrl}
+                        href={productUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
@@ -97,7 +102,7 @@ export default function ProductCard({ product, index = 0, variant = 'horizontal'
             <div
               className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
               style={{
-                backgroundImage: `url(${product.heroImageUrl || getCategoryImage(product.category)})`,
+                backgroundImage: `url(${heroImage || getCategoryImage(product.category)})`,
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -130,16 +135,16 @@ export default function ProductCard({ product, index = 0, variant = 'horizontal'
             </p>
 
             {/* CTA Button */}
-            {product.productUrl && (
+            {productUrl && (
               <div className="mt-auto">
                 <a
-                  href={product.productUrl}
+                  href={productUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   className="inline-flex items-center gap-2 text-teal font-medium hover:text-teal-dark transition-colors"
                 >
-                  {product.ctaLabel || 'Visit Site'}
+                  {ctaLabel || 'Visit Site'}
                   <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
