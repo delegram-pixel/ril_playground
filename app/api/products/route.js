@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { sampleProducts } from '@/lib/sampleData'
 
 export async function GET(request) {
@@ -15,7 +15,7 @@ export async function GET(request) {
 
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = createClient()
+      const supabase = await createClient()
 
       let query = supabase
         .from('products')
@@ -147,7 +147,7 @@ export async function POST(request) {
 
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = createClient()
+      const supabase = await createClient()
 
       // First, create or get the owner
       let ownerId = body.ownerId
@@ -197,6 +197,14 @@ export async function POST(request) {
           hero_image_url: body.heroImageUrl || null,
           product_url: body.productUrl || null,
           cta_label: body.ctaLabel || 'Visit Site',
+          users_reached: body.usersReached ? parseInt(body.usersReached) : null,
+          problems_solved: body.problemsSolved ? parseInt(body.problemsSolved) : null,
+          geographic_reach: body.geographicReach || null,
+          country: body.country || null,
+          region: body.region || null,
+          impact_score: body.impactScore ? parseInt(body.impactScore) : null,
+          funding_stage: body.fundingStage || null,
+          funding_amount: body.fundingAmount ? parseFloat(body.fundingAmount) : null,
           owner_id: ownerId,
         })
         .select(`
@@ -206,6 +214,99 @@ export async function POST(request) {
         .single()
 
       if (error) throw error
+
+      const productId = data.id
+
+      // Insert tech stack if provided
+      if (body.techStack && body.techStack.trim()) {
+        const technologies = body.techStack
+          .split(',')
+          .map(tech => tech.trim())
+          .filter(tech => tech.length > 0)
+
+        if (technologies.length > 0) {
+          const techStackData = technologies.map(tech => ({
+            product_id: productId,
+            technology: tech,
+          }))
+
+          await supabase
+            .from('product_tech_stack')
+            .insert(techStackData)
+        }
+      }
+
+      // Insert media items if provided
+      if (body.mediaItems && body.mediaItems.trim()) {
+        const mediaUrls = body.mediaItems
+          .split('\n')
+          .map(url => url.trim())
+          .filter(url => url.length > 0)
+
+        if (mediaUrls.length > 0) {
+          const mediaData = mediaUrls.map((url, index) => ({
+            product_id: productId,
+            type: 'IMAGE',
+            url: url,
+            display_order: index,
+          }))
+
+          await supabase
+            .from('product_media')
+            .insert(mediaData)
+        }
+      }
+
+      // Insert team members if provided
+      if (body.teamMembers && body.teamMembers.trim()) {
+        const members = body.teamMembers
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+
+        if (members.length > 0) {
+          for (const member of members) {
+            const [name, role] = member.split('-').map(s => s.trim())
+            if (name) {
+              // Create or get user for team member
+              let memberUserId
+              const memberEmail = `${name.toLowerCase().replace(/\s+/g, '.')}@placeholder.com`
+
+              const { data: existingMember } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', memberEmail)
+                .single()
+
+              if (existingMember) {
+                memberUserId = existingMember.id
+              } else {
+                const { data: newMember } = await supabase
+                  .from('users')
+                  .insert({
+                    name: name,
+                    email: memberEmail,
+                    role: 'TEAM',
+                  })
+                  .select()
+                  .single()
+
+                memberUserId = newMember?.id
+              }
+
+              if (memberUserId) {
+                await supabase
+                  .from('team_members')
+                  .insert({
+                    product_id: productId,
+                    user_id: memberUserId,
+                    role: role || 'Member',
+                  })
+              }
+            }
+          }
+        }
+      }
 
       return NextResponse.json(
         { message: 'Product created successfully', product: transformProduct(data) },

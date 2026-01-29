@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 
 export default function Header() {
@@ -16,29 +15,28 @@ export default function Header() {
   ]
 
   return (
-    <header className="border-b border-stone-200 sticky top-0 z-50 backdrop-blur-md bg-white/80">
+    <header className="border-b border-stone-200 sticky top-0 z-50 bg-white">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">RH</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-teal rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-sm">RH</span>
             </div>
-            <span className="font-bold text-xl text-primary hidden sm:block">
+            <span className="font-bold text-lg text-primary group-hover:text-teal transition-colors">
               Renaissance HAVEN
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center gap-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-teal font-medium transition-colors relative group"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal transition-all group-hover:w-full" />
               </Link>
             ))}
           </div>
@@ -46,41 +44,30 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="md:hidden p-2 rounded-md hover:bg-stone-50 transition-colors"
           >
             {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-gray-700" />
+              <X className="w-5 h-5 text-gray-700" />
             ) : (
-              <Menu className="w-6 h-6 text-gray-700" />
+              <Menu className="w-5 h-5 text-gray-700" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <motion.div
-            className="md:hidden pb-4"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            {navigation.map((item, index) => (
-              <motion.div
+          <div className="md:hidden pb-3 border-t border-stone-200 mt-3">
+            {navigation.map((item) => (
+              <Link
                 key={item.name}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
+                href={item.href}
+                className="block py-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
+                onClick={() => setMobileMenuOpen(false)}
               >
-                <Link
-                  href={item.href}
-                  className="block py-2 text-gray-700 hover:text-teal font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              </motion.div>
+                {item.name}
+              </Link>
             ))}
-          </motion.div>
+          </div>
         )}
       </nav>
     </header>

@@ -1,27 +1,79 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { AlertTriangle, Clock, UserX, Plus, Edit, Trash2 } from 'lucide-react'
-import { sampleProducts } from '@/lib/sampleData'
+import { AlertTriangle, Clock, UserX, Plus, Edit, Trash2, Loader2, LogOut } from 'lucide-react'
 import StatusBadge from '@/components/products/StatusBadge'
 import CategoryBadge from '@/components/products/CategoryBadge'
 import ProductForm from '@/components/governance/ProductForm'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function GovernancePage() {
+  const { user, loading: authLoading, signOut } = useAuth()
+  const router = useRouter()
+
   const [view, setView] = useState('overview') // overview, create, edit
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
 
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Check authentication
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/admin/login')
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (user) {
+      fetchProducts()
+    }
+  }, [user])
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-teal animate-spin" />
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null
+  }
+
+
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/products')
+      if (!response.ok) throw new Error('Failed to fetch products')
+      const data = await response.json()
+      setProducts(data)
+    } catch (err) {
+      console.error('Error fetching products:', err)
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Calculate governance metrics
-  const staleProducts = sampleProducts.filter((p) => {
+  const staleProducts = products.filter((p) => {
     const daysSinceUpdate = Math.floor(
       (new Date() - new Date(p.lastUpdated)) / (1000 * 60 * 60 * 24)
     )
     return daysSinceUpdate > 90
   })
 
-  const productHealth = sampleProducts.map((product) => {
+  const productHealth = products.map((product) => {
     const daysSinceUpdate = Math.floor(
       (new Date() - new Date(product.lastUpdated)) / (1000 * 60 * 60 * 24)
     )
@@ -32,6 +84,7 @@ export default function GovernancePage() {
   })
 
   const formatDate = (date) => {
+    if (!date) return 'N/A'
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -53,16 +106,28 @@ export default function GovernancePage() {
               <h1 className="text-5xl font-bold text-primary mb-2">Governance Dashboard</h1>
               <p className="text-gray-600">Internal portfolio management and oversight</p>
             </div>
-            <button
-              onClick={() => {
-                setSelectedProduct(null)
-                setIsFormOpen(true)
-              }}
-              className="inline-flex items-center gap-2 bg-teal text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-dark transition-all hover:shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              New Product
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  setSelectedProduct(null)
+                  setIsFormOpen(true)
+                }}
+                className="inline-flex items-center gap-2 bg-teal text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-dark transition-all hover:shadow-lg"
+              >
+                <Plus className="w-5 h-5" />
+                New Product
+              </button>
+              <button
+                onClick={async () => {
+                  await signOut()
+                  router.push('/admin/login')
+                }}
+                className="inline-flex items-center gap-2 bg-stone-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-stone-200 transition-all"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Governance Alerts */}
@@ -86,16 +151,22 @@ export default function GovernancePage() {
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            className="glass-card rounded-xl p-6 border border-stone-200"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="text-3xl font-bold text-primary mb-1">{sampleProducts.length}</div>
-            <div className="text-sm text-gray-600">Total Products</div>
-          </motion.div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 text-teal animate-spin" />
+          </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-4 gap-6 mb-8">
+              <motion.div
+                className="glass-card rounded-xl p-6 border border-stone-200"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="text-3xl font-bold text-primary mb-1">{products.length}</div>
+                <div className="text-sm text-gray-600">Total Products</div>
+              </motion.div>
 
           <motion.div
             className="glass-card rounded-xl p-6 border border-stone-200"
@@ -265,6 +336,8 @@ export default function GovernancePage() {
             </table>
           </div>
         </motion.div>
+          </>
+        )}
 
         {/* Governance Rules */}
         <motion.div

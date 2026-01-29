@@ -4,6 +4,7 @@ import 'yet-another-react-lightbox/styles.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import AnimatedBackground from '@/components/layout/AnimatedBackground'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,12 +17,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AnimatedBackground />
-        <Header />
-        <main className="min-h-screen relative z-0">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <AnimatedBackground />
+          <Header />
+          <main className="min-h-screen relative z-0">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )

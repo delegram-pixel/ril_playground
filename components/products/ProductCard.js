@@ -2,11 +2,11 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ExternalLink, Calendar, Users } from 'lucide-react'
+import { ExternalLink, ArrowUpRight } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 import CategoryBadge from './CategoryBadge'
 
-export default function ProductCard({ product, index = 0 }) {
+export default function ProductCard({ product, index = 0, variant = 'horizontal' }) {
   const getCategoryImage = (category) => {
     const images = {
       CIVIC_TECH: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80',
@@ -21,13 +21,68 @@ export default function ProductCard({ product, index = 0 }) {
     return images[category] || images.OTHER
   }
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-    })
+  if (variant === 'horizontal') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05, duration: 0.3 }}
+      >
+        <Link href={`/products/${product.id}`}>
+          <div className="group bg-white border border-stone-200 rounded-lg p-4 hover:border-teal hover:shadow-md transition-all">
+            <div className="flex gap-4">
+              {/* Thumbnail */}
+              <div className="flex-shrink-0">
+                <div
+                  className="w-20 h-20 rounded-md bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${product.heroImageUrl || getCategoryImage(product.category)})`,
+                  }}
+                />
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-bold text-primary group-hover:text-teal transition-colors mb-1">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                      {product.tagline}
+                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <CategoryBadge category={product.category} />
+                      <StatusBadge status={product.status} />
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  <div className="flex-shrink-0 flex items-center gap-2">
+                    {product.productUrl && (
+                      <a
+                        href={product.productUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 text-gray-400 hover:text-teal hover:bg-teal/10 rounded-md transition-all"
+                        title="Visit site"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                    <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-teal transition-colors" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </motion.div>
+    )
   }
 
+  // Original vertical card variant
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -74,36 +129,21 @@ export default function ProductCard({ product, index = 0 }) {
               {product.tagline}
             </p>
 
-            {/* Metadata */}
-            <div className="mt-auto space-y-2">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Calendar className="w-4 h-4" />
-                <span>Started {formatDate(product.startDate)}</span>
+            {/* CTA Button */}
+            {product.productUrl && (
+              <div className="mt-auto">
+                <a
+                  href={product.productUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-2 text-teal font-medium hover:text-teal-dark transition-colors"
+                >
+                  {product.ctaLabel || 'Visit Site'}
+                  <ExternalLink className="w-4 h-4" />
+                </a>
               </div>
-
-              {product.owner && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Users className="w-4 h-4" />
-                  <span>{product.owner.name}</span>
-                </div>
-              )}
-
-              {/* CTA Button */}
-              {product.productUrl && (
-                <div className="pt-4">
-                  <a
-                    href={product.productUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2 text-teal font-medium hover:text-teal-dark transition-colors"
-                  >
-                    {product.ctaLabel || 'Visit Site'}
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </Link>

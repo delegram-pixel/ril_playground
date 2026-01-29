@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { sampleProducts } from '@/lib/sampleData'
 
 export async function GET(request, { params }) {
@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
 
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = createClient()
+      const supabase = await createClient()
 
       const { data, error } = await supabase
         .from('products')
@@ -59,7 +59,7 @@ export async function PUT(request, { params }) {
 
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = createClient()
+      const supabase = await createClient()
 
       const updateData = {}
 
@@ -75,12 +75,18 @@ export async function PUT(request, { params }) {
       if (body.keyDifferentiators !== undefined) updateData.key_differentiators = body.keyDifferentiators
       if (body.systemLogic !== undefined) updateData.system_logic = body.systemLogic
       if (body.status !== undefined) updateData.status = body.status
+      if (body.startDate !== undefined) updateData.start_date = body.startDate
       if (body.heroImageUrl !== undefined) updateData.hero_image_url = body.heroImageUrl
       if (body.productUrl !== undefined) updateData.product_url = body.productUrl
       if (body.ctaLabel !== undefined) updateData.cta_label = body.ctaLabel
       if (body.usersReached !== undefined) updateData.users_reached = body.usersReached
       if (body.problemsSolved !== undefined) updateData.problems_solved = body.problemsSolved
       if (body.geographicReach !== undefined) updateData.geographic_reach = body.geographicReach
+      if (body.country !== undefined) updateData.country = body.country
+      if (body.region !== undefined) updateData.region = body.region
+      if (body.impactScore !== undefined) updateData.impact_score = body.impactScore
+      if (body.fundingStage !== undefined) updateData.funding_stage = body.fundingStage
+      if (body.fundingAmount !== undefined) updateData.funding_amount = body.fundingAmount
 
       const { data, error } = await supabase
         .from('products')
@@ -100,6 +106,124 @@ export async function PUT(request, { params }) {
           )
         }
         throw error
+      }
+
+      // Update tech stack if provided
+      if (body.techStack !== undefined) {
+        // Delete existing tech stack
+        await supabase
+          .from('product_tech_stack')
+          .delete()
+          .eq('product_id', id)
+
+        // Insert new tech stack
+        if (body.techStack && body.techStack.trim()) {
+          const technologies = body.techStack
+            .split(',')
+            .map(tech => tech.trim())
+            .filter(tech => tech.length > 0)
+
+          if (technologies.length > 0) {
+            const techStackData = technologies.map(tech => ({
+              product_id: id,
+              technology: tech,
+            }))
+
+            await supabase
+              .from('product_tech_stack')
+              .insert(techStackData)
+          }
+        }
+      }
+
+      // Update media items if provided
+      if (body.mediaItems !== undefined) {
+        // Delete existing media
+        await supabase
+          .from('product_media')
+          .delete()
+          .eq('product_id', id)
+
+        // Insert new media
+        if (body.mediaItems && body.mediaItems.trim()) {
+          const mediaUrls = body.mediaItems
+            .split('\n')
+            .map(url => url.trim())
+            .filter(url => url.length > 0)
+
+          if (mediaUrls.length > 0) {
+            const mediaData = mediaUrls.map((url, index) => ({
+              product_id: id,
+              type: 'IMAGE',
+              url: url,
+              display_order: index,
+            }))
+
+            await supabase
+              .from('product_media')
+              .insert(mediaData)
+          }
+        }
+      }
+
+      // Update team members if provided
+      if (body.teamMembers !== undefined) {
+        // Delete existing team members
+        await supabase
+          .from('team_members')
+          .delete()
+          .eq('product_id', id)
+
+        // Insert new team members
+        if (body.teamMembers && body.teamMembers.trim()) {
+          const members = body.teamMembers
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+
+          if (members.length > 0) {
+            for (const member of members) {
+              const [name, role] = member.split('-').map(s => s.trim())
+              if (name) {
+                // Create or get user for team member
+                let memberUserId
+                const memberEmail = `${name.toLowerCase().replace(/\s+/g, '.')}@placeholder.com`
+
+                const { data: existingMember } = await supabase
+                  .from('users')
+                  .select('id')
+                  .eq('email', memberEmail)
+                  .single()
+
+                if (existingMember) {
+                  memberUserId = existingMember.id
+                } else {
+                  const { data: newMember } = await supabase
+                    .from('users')
+                    .insert({
+                      name: name,
+                      email: memberEmail,
+                      role: 'TEAM',
+                    })
+                    .select()
+                    .single()
+
+                  memberUserId = newMember?.id
+                }
+
+                if (memberUserId) {
+                  await supabase
+                    .from('team_members')
+                    .insert({
+                      product_id: id,
+                      user_id: memberUserId,
+                      role: role || 'Member',
+                    })
+                }
+              }
+            }
+          }
+        }
       }
 
       return NextResponse.json({
@@ -128,7 +252,7 @@ export async function DELETE(request, { params }) {
 
     // Try Supabase first
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = createClient()
+      const supabase = await createClient()
 
       // Soft delete by updating status to ARCHIVED
       const { data, error } = await supabase
