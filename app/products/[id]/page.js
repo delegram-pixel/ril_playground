@@ -7,24 +7,29 @@ import {
   ArrowLeft,
   Calendar,
   Users,
-  TrendingUp,
   MapPin,
   ExternalLink,
   Clock,
   Loader2,
+  Share2,
+  Info,
+  TrendingUp,
+  FolderOpen,
+  CheckCircle2,
+  Circle,
+  FileText,
+  Github,
+  Link as LinkIcon,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import StatusBadge from '@/components/products/StatusBadge'
 import CategoryBadge from '@/components/products/CategoryBadge'
 import ImpressionForm from '@/components/products/ImpressionForm'
 import ImpressionSummary from '@/components/products/ImpressionSummary'
+import VoteButtons from '@/components/products/VoteButtons'
 import MediaGallery from '@/components/gallery/MediaGallery'
-import ChangelogTimeline from '@/components/changelog/ChangelogTimeline'
-import TeamSection from '@/components/team/TeamSection'
 import ShareButtons from '@/components/share/ShareButtons'
 import PDFExport from '@/components/share/PDFExport'
-import RelatedProducts from '@/components/products/RelatedProducts'
-import { Github, ExternalLink as LinkIcon, FileText } from 'lucide-react'
 
 export default function ProductProfilePage({ params }) {
   const [product, setProduct] = useState(null)
@@ -34,14 +39,13 @@ export default function ProductProfilePage({ params }) {
   const [links, setLinks] = useState([])
   const [changelog, setChangelog] = useState([])
   const [techStack, setTechStack] = useState([])
-  const [relatedProducts, setRelatedProducts] = useState([])
+  const [activeTab, setActiveTab] = useState('overview')
   const [userImpressions, setUserImpressions] = useState([])
 
   useEffect(() => {
     fetchProduct()
   }, [params.id])
 
-  // Transform Supabase snake_case to camelCase
   const transformProduct = (data) => {
     if (!data) return null
     return {
@@ -81,7 +85,6 @@ export default function ProductProfilePage({ params }) {
       setIsLoading(true)
       const supabase = createClient()
 
-      // Fetch product with owner from users table
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -94,7 +97,6 @@ export default function ProductProfilePage({ params }) {
       if (error) throw error
       setProduct(transformProduct(data))
 
-      // Fetch related data in parallel if product exists
       if (data) {
         const [mediaRes, linksRes, techRes, teamRes] = await Promise.all([
           supabase.from('product_media').select('*').eq('product_id', params.id).order('display_order'),
@@ -111,7 +113,6 @@ export default function ProductProfilePage({ params }) {
         setLinks(linksRes.data || [])
         setTechStack(techRes.data || [])
 
-        // Transform team members
         if (teamRes.data) {
           const transformedTeam = teamRes.data.map(tm => ({
             id: tm.id,
@@ -132,7 +133,7 @@ export default function ProductProfilePage({ params }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <Loader2 className="w-12 h-12 text-teal animate-spin" />
       </div>
     )
@@ -140,10 +141,10 @@ export default function ProductProfilePage({ params }) {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-700 mb-4">Product Not Found</h1>
-          <Link href="/products" className="text-teal hover:underline">
+          <Link href="/" className="text-teal hover:underline">
             Return to Products
           </Link>
         </div>
@@ -155,34 +156,28 @@ export default function ProductProfilePage({ params }) {
     try {
       const response = await fetch('/api/impressions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(impression),
       })
-
       if (response.ok) {
         setUserImpressions([...userImpressions, impression])
-        alert('✓ Thank you for your impression! Your feedback has been recorded.')
-      } else {
-        alert('Failed to submit impression. Please try again.')
+        alert('Thank you for your impression!')
       }
     } catch (error) {
       console.error('Error submitting impression:', error)
-      alert('An error occurred. Please try again.')
     }
   }
 
   const getCategoryImage = (category) => {
     const images = {
-      CIVIC_TECH: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1920&q=80',
-      HEALTH_TECH: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&q=80',
-      AI_INFRASTRUCTURE: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&q=80',
-      FINTECH: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1920&q=80',
-      EDTECH: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1920&q=80',
-      AGRITECH: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1920&q=80',
-      CLIMATE_TECH: 'https://images.unsplash.com/photo-1569163139394-de4798aa62b5?w=1920&q=80',
-      OTHER: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80',
+      CIVIC_TECH: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&q=80',
+      HEALTH_TECH: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80',
+      AI_INFRASTRUCTURE: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&q=80',
+      FINTECH: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80',
+      EDTECH: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80',
+      AGRITECH: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&q=80',
+      CLIMATE_TECH: 'https://images.unsplash.com/photo-1569163139394-de4798aa62b5?w=400&q=80',
+      OTHER: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&q=80',
     }
     return images[category] || images.OTHER
   }
@@ -190,7 +185,7 @@ export default function ProductProfilePage({ params }) {
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric',
     })
   }
@@ -199,334 +194,519 @@ export default function ProductProfilePage({ params }) {
     (new Date() - new Date(product.lastUpdated)) / (1000 * 60 * 60 * 24)
   )
 
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: Info },
+    { id: 'team', label: 'Team', icon: Users },
+    { id: 'timeline', label: 'Timeline', icon: TrendingUp },
+    { id: 'resources', label: 'Resources', icon: FolderOpen },
+  ]
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <div className="relative h-[400px] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${product.heroImageUrl || getCategoryImage(product.category)})`,
-          }}
-        />
-        <div className="absolute inset-0 gradient-overlay" />
+    <div className="min-h-screen bg-stone-50">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-stone-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <nav className="flex items-center gap-2 text-sm">
+            <Link href="/" className="text-gray-500 hover:text-teal transition-colors">
+              Home
+            </Link>
+            <span className="text-gray-300">/</span>
+            <Link href="/" className="text-gray-500 hover:text-teal transition-colors">
+              Products
+            </Link>
+            <span className="text-gray-300">/</span>
+            <span className="text-gray-800 font-medium">{product.name}</span>
+          </nav>
+        </div>
+      </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 h-full flex flex-col justify-end pb-12">
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 text-white hover:text-brown-light mb-6 w-fit"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Products
-          </Link>
-
-          <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <div className="flex flex-wrap gap-3 mb-4">
-              <CategoryBadge category={product.category} />
-              <StatusBadge status={product.status} />
+      {/* Product Header */}
+      <div className="bg-white border-b border-stone-200">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Product Image/Icon */}
+            <div className="flex-shrink-0">
+              <div
+                className="w-24 h-24 rounded-xl bg-cover bg-center border border-stone-200"
+                style={{
+                  backgroundImage: `url(${product.heroImageUrl || getCategoryImage(product.category)})`,
+                }}
+              />
             </div>
 
-            <h1 className="text-5xl font-bold text-white mb-3">{product.name}</h1>
-            {product.codename && (
-              <p className="text-xl text-stone-200 font-mono mb-3">{product.codename}</p>
-            )}
-            <p className="text-2xl text-stone-100 max-w-3xl">{product.tagline}</p>
-          </motion.div>
+            {/* Product Info */}
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+                    <StatusBadge status={product.status} />
+                  </div>
+                  <p className="text-gray-600 mb-2">
+                    Status: {product.status.replace('_', ' ')} / {product.category.replace('_', ' ')}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Clock className="w-4 h-4" />
+                    <span>Last updated {daysSinceUpdate} days ago</span>
+                    {product.owner && (
+                      <>
+                        <span>by</span>
+                        <span className="text-teal">{product.owner.name}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-3">
+                  {product.productUrl && (
+                    <a
+                      href={product.productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-lg text-gray-700 font-medium hover:bg-stone-50 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Visit
+                    </a>
+                  )}
+                  <button className="inline-flex items-center gap-2 px-4 py-2 bg-teal text-white rounded-lg font-medium hover:bg-teal-700 transition-colors">
+                    <Share2 className="w-4 h-4" />
+                    Share
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="mt-6 border-t border-stone-100 pt-4">
+            <nav className="flex items-center gap-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 pb-3 border-b-2 transition-colors ${
+                    activeTab === tab.id
+                      ? 'border-teal text-teal'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span className="font-medium">{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Warnings */}
+          <div className="lg:col-span-2 space-y-6">
+            {activeTab === 'overview' && (
+              <>
+                {/* Problem & Solution */}
+                <motion.section
+                  className="bg-white rounded-xl p-6 border border-stone-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-6">
+                    <div className="w-2 h-2 bg-teal rounded-full" />
+                    Problem & Solution
+                  </h2>
 
+                  {/* The Problem */}
+                  <div className="mb-6">
+                    <h3 className="text-teal font-semibold mb-2">The Problem</h3>
+                    <div className="pl-4 border-l-2 border-teal/30">
+                      <p className="text-gray-600">{product.problemStatement}</p>
+                    </div>
+                  </div>
 
-            {/* Problem & Context */}
-            <motion.section
-              className="glass-card rounded-xl p-8 border border-stone-200"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-2xl font-bold text-primary mb-4">Problem & Context</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Problem Statement</h3>
-                  <p className="text-gray-600">{product.problemStatement}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Target Users</h3>
-                  <p className="text-gray-600">{product.targetUsers}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Local Context</h3>
-                  <p className="text-gray-600">{product.localContext}</p>
-                </div>
-              </div>
-            </motion.section>
+                  {/* Our Solution */}
+                  <div className="mb-6">
+                    <h3 className="text-gray-800 font-semibold mb-2">Our Solution</h3>
+                    <p className="text-gray-600">{product.solutionOverview}</p>
+                  </div>
 
-            {/* Solution Overview */}
-            <motion.section
-              className="glass-card rounded-xl p-8 border border-stone-200"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              <h2 className="text-2xl font-bold text-primary mb-4">Solution Overview</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Core Approach</h3>
-                  <p className="text-gray-600">{product.solutionOverview}</p>
+                  {/* Key Differentiators */}
+                  {product.keyDifferentiators && (
+                    <div className="mb-6">
+                      <h3 className="text-gray-800 font-semibold mb-2">Key Differentiators</h3>
+                      <p className="text-gray-600">{product.keyDifferentiators}</p>
+                    </div>
+                  )}
+
+                  {/* Target Users */}
+                  {product.targetUsers && (
+                    <div>
+                      <h3 className="text-gray-800 font-semibold mb-2">Target Users</h3>
+                      <p className="text-gray-600">{product.targetUsers}</p>
+                    </div>
+                  )}
+                </motion.section>
+
+                {/* Project Timeline */}
+                <motion.section
+                  className="bg-white rounded-xl p-6 border border-stone-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-6">
+                    <div className="w-2 h-2 bg-teal rounded-full" />
+                    Project Timeline
+                  </h2>
+
+                  <div className="space-y-4">
+                    {/* Timeline Items */}
+                    <TimelineItem
+                      title="Project Started"
+                      date={formatDate(product.startDate)}
+                      completed={true}
+                    />
+                    <TimelineItem
+                      title="Development Phase"
+                      date={product.status === 'IN_DEVELOPMENT' ? 'In Progress' : 'Completed'}
+                      completed={product.status !== 'EXPLORING'}
+                      active={product.status === 'IN_DEVELOPMENT'}
+                    />
+                    <TimelineItem
+                      title="MVP Release"
+                      date={product.status === 'MVP' ? 'Current Phase' : product.status === 'LIVE' ? 'Completed' : 'Upcoming'}
+                      completed={product.status === 'MVP' || product.status === 'LIVE'}
+                      active={product.status === 'MVP'}
+                    />
+                    <TimelineItem
+                      title="Full Deployment"
+                      date={product.status === 'LIVE' ? 'Live Now' : 'Planned'}
+                      completed={product.status === 'LIVE'}
+                      active={product.status === 'LIVE'}
+                    />
+                  </div>
+                </motion.section>
+
+                {/* Media Gallery */}
+                {media.length > 0 && <MediaGallery media={media} />}
+
+                {/* Impressions */}
+                <ImpressionSummary impressions={impressions} />
+                <ImpressionForm productId={product.id} onSubmit={handleImpressionSubmit} />
+              </>
+            )}
+
+            {activeTab === 'team' && (
+              <motion.section
+                className="bg-white rounded-xl p-6 border border-stone-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Team Members</h2>
+                <div className="space-y-4">
+                  {product.team && product.team.length > 0 ? (
+                    product.team.map((member, index) => (
+                      <div key={index} className="flex items-center gap-4 p-4 bg-stone-50 rounded-lg">
+                        <img
+                          src={member.avatarUrl || `https://ui-avatars.com/api/?name=${member.name}`}
+                          alt={member.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div>
+                          <div className="font-semibold text-gray-800">{member.name}</div>
+                          <div className="text-sm text-teal">{member.role}</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : product.owner ? (
+                    <div className="flex items-center gap-4 p-4 bg-stone-50 rounded-lg">
+                      <img
+                        src={product.owner.avatarUrl || `https://ui-avatars.com/api/?name=${product.owner.name}`}
+                        alt={product.owner.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div>
+                        <div className="font-semibold text-gray-800">{product.owner.name}</div>
+                        <div className="text-sm text-teal">Product Lead</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No team members assigned yet.</p>
+                  )}
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">Key Differentiators</h3>
-                  <p className="text-gray-600">{product.keyDifferentiators}</p>
+              </motion.section>
+            )}
+
+            {activeTab === 'timeline' && (
+              <motion.section
+                className="bg-white rounded-xl p-6 border border-stone-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Full Timeline</h2>
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-3 h-3 bg-teal rounded-full mt-1.5" />
+                    <div>
+                      <div className="font-semibold text-gray-800">Project Created</div>
+                      <div className="text-sm text-gray-500">{formatDate(product.createdAt)}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-3 h-3 bg-teal rounded-full mt-1.5" />
+                    <div>
+                      <div className="font-semibold text-gray-800">Last Updated</div>
+                      <div className="text-sm text-gray-500">{formatDate(product.lastUpdated)}</div>
+                    </div>
+                  </div>
                 </div>
-                {product.systemLogic && (
-                  <div>
-                    <h3 className="font-semibold text-gray-700 mb-2">System Logic</h3>
-                    <p className="text-gray-600 font-mono text-sm bg-stone-50 p-4 rounded-lg">
-                      {product.systemLogic}
-                    </p>
+              </motion.section>
+            )}
+
+            {activeTab === 'resources' && (
+              <motion.section
+                className="bg-white rounded-xl p-6 border border-stone-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Resources & Links</h2>
+                {links.length > 0 ? (
+                  <div className="space-y-3">
+                    {links.map((link) => (
+                      <a
+                        key={link.id}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-4 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors group"
+                      >
+                        <div className="w-10 h-10 bg-teal/10 rounded-lg flex items-center justify-center text-teal">
+                          {link.type === 'GITHUB' ? (
+                            <Github className="w-5 h-5" />
+                          ) : link.type === 'DOCS' ? (
+                            <FileText className="w-5 h-5" />
+                          ) : (
+                            <LinkIcon className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-800 group-hover:text-teal transition-colors">
+                            {link.label}
+                          </div>
+                          {link.description && (
+                            <div className="text-sm text-gray-500">{link.description}</div>
+                          )}
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-gray-400" />
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No resources available yet.</p>
+                )}
+
+                {/* Tech Stack */}
+                {techStack.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="font-semibold text-gray-800 mb-4">Technology Stack</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {techStack.map((tech) => (
+                        <span
+                          key={tech.id}
+                          className="px-3 py-1.5 bg-teal/10 text-teal rounded-full text-sm font-medium"
+                        >
+                          {tech.technology}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
-            </motion.section>
-
-            {/* Media Gallery */}
-            <MediaGallery media={media} />
-
-            {/* Product Links */}
-            {links.length > 0 && (
-              <motion.section
-                className="glass-card rounded-xl p-8 border border-stone-200"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-2xl font-bold text-primary mb-6">Links & Resources</h2>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {links.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-4 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors group"
-                    >
-                      <div className="w-12 h-12 bg-teal rounded-lg flex items-center justify-center text-white flex-shrink-0">
-                        {link.type === 'GITHUB' ? (
-                          <Github className="w-6 h-6" />
-                        ) : link.type === 'DOCS' ? (
-                          <FileText className="w-6 h-6" />
-                        ) : (
-                          <LinkIcon className="w-6 h-6" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800 group-hover:text-teal transition-colors">
-                          {link.label}
-                        </h4>
-                        {link.description && (
-                          <p className="text-sm text-gray-600">{link.description}</p>
-                        )}
-                      </div>
-                      <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-teal transition-colors" />
-                    </a>
-                  ))}
-                </div>
               </motion.section>
             )}
-
-            {/* Technology Stack */}
-            {techStack.length > 0 && (
-              <motion.section
-                className="glass-card rounded-xl p-8 border border-stone-200"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-2xl font-bold text-primary mb-6">Technology Stack</h2>
-                <div className="flex flex-wrap gap-2">
-                  {techStack.map((tech) => (
-                    <span
-                      key={tech.id}
-                      className="px-3 py-2 bg-teal/10 text-teal rounded-lg text-sm font-medium"
-                    >
-                      {tech.technology}
-                    </span>
-                  ))}
-                </div>
-              </motion.section>
-            )}
-
-            {/* Metrics & Impact */}
-            {(product.usersReached || product.problemsSolved || product.geographicReach) && (
-              <motion.section
-                className="glass-card rounded-xl p-8 border border-stone-200"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-              >
-                <h2 className="text-2xl font-bold text-primary mb-4">Impact & Reach</h2>
-                <div className="grid md:grid-cols-3 gap-6">
-                  {product.usersReached && (
-                    <div className="bg-teal/5 rounded-lg p-4">
-                      <div className="text-3xl font-bold text-teal mb-1">
-                        {product.usersReached.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-600">Users Reached</div>
-                    </div>
-                  )}
-                  {product.problemsSolved && (
-                    <div className="bg-green-50 rounded-lg p-4">
-                      <div className="text-3xl font-bold text-green-600 mb-1">
-                        {product.problemsSolved.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-600">Problems Solved</div>
-                    </div>
-                  )}
-                  {product.geographicReach && (
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-primary mb-2">
-                        <MapPin className="w-5 h-5" />
-                        <span className="font-semibold">Geographic Reach</span>
-                      </div>
-                      <div className="text-sm text-gray-600">{product.geographicReach}</div>
-                    </div>
-                  )}
-                </div>
-              </motion.section>
-            )}
-
-            {/* Impression Summary */}
-            <ImpressionSummary impressions={impressions} />
-
-            {/* Impression Form */}
-            <ImpressionForm productId={product.id} onSubmit={handleImpressionSubmit} />
-
-            {/* Product Journey / Changelog */}
-            <ChangelogTimeline changelog={changelog} />
-
-            {/* Team Section */}
-            <TeamSection team={product.team} owner={product.owner} />
-
-            {/* Share & Export */}
-            <motion.section
-              className="glass-card rounded-xl p-6 border border-stone-200"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <ShareButtons product={product} />
-                <PDFExport product={product} />
-              </div>
-            </motion.section>
-
-            {/* Related Products */}
-            <RelatedProducts relatedProducts={relatedProducts} />
           </div>
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            {/* CTA */}
-            {product.productUrl && (
-              <motion.a
-                href={product.productUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block bg-teal text-white text-center py-4 px-6 rounded-xl font-semibold hover:bg-teal-dark transition-colors flex items-center justify-center gap-2"
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                {product.ctaLabel || 'Visit Site'}
-                <ExternalLink className="w-5 h-5" />
-              </motion.a>
-            )}
-
-            {/* Status & Timeline */}
+            {/* Project Leads */}
             <motion.div
-              className="glass-card rounded-xl p-6 border border-stone-200"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
+              className="bg-white rounded-xl p-6 border border-stone-200"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
             >
-              <h3 className="font-bold text-primary mb-4">Status & Timeline</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <div className="text-gray-500">Started</div>
-                    <div className="font-medium">{formatDate(product.startDate)}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Clock className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <div className="text-gray-500">Last Updated</div>
-                    <div className="font-medium">
-                      {formatDate(product.lastUpdated)} ({daysSinceUpdate} days ago)
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Team */}
-            <motion.div
-              className="glass-card rounded-xl p-6 border border-stone-200"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h3 className="font-bold text-primary mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Team
-              </h3>
+              <h3 className="font-bold text-gray-900 mb-4">Project Leads</h3>
               <div className="space-y-4">
-                {product.team && product.team.length > 0 ? (
-                  product.team.map((member, index) => (
+                {product.team && product.team.filter(m => m.role?.toLowerCase().includes('lead')).length > 0 ? (
+                  product.team.filter(m => m.role?.toLowerCase().includes('lead')).map((member, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <img
-                        src={member.avatarUrl}
+                        src={member.avatarUrl || `https://ui-avatars.com/api/?name=${member.name}`}
                         alt={member.name}
-                        className="w-10 h-10 rounded-full object-cover border border-stone-100"
+                        className="w-10 h-10 rounded-full object-cover"
                       />
                       <div>
-                        <div className="font-semibold text-gray-800">{member.name}</div>
-                        <div className="text-xs text-teal font-medium uppercase tracking-wider">
-                          {member.role}
-                        </div>
+                        <div className="font-medium text-gray-800">{member.name}</div>
+                        <div className="text-xs text-gray-500">{member.role}</div>
                       </div>
                     </div>
                   ))
                 ) : product.owner ? (
                   <div className="flex items-center gap-3">
-                    {product.owner.avatarUrl && (
-                      <img
-                        src={product.owner.avatarUrl}
-                        alt={product.owner.name}
-                        className="w-12 h-12 rounded-full"
-                      />
-                    )}
+                    <img
+                      src={product.owner.avatarUrl || `https://ui-avatars.com/api/?name=${product.owner.name}`}
+                      alt={product.owner.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
                     <div>
-                      <div className="font-semibold">{product.owner.name}</div>
-                      <div className="text-sm text-gray-500">Product Lead</div>
+                      <div className="font-medium text-gray-800">{product.owner.name}</div>
+                      <div className="text-xs text-gray-500">Product Lead</div>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">No team assigned yet</p>
+                ) : null}
+              </div>
+              <button className="w-full mt-4 py-2 text-sm text-teal font-medium border border-teal/30 rounded-lg hover:bg-teal/5 transition-colors">
+                View Full Team
+              </button>
+            </motion.div>
+
+            {/* Key Links */}
+            <motion.div
+              className="bg-white rounded-xl p-6 border border-stone-200"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <h3 className="font-bold text-gray-900 mb-4">Key Links</h3>
+              <div className="space-y-3">
+                {product.productUrl && (
+                  <a
+                    href={product.productUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-600 hover:text-teal transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-stone-100 rounded-lg flex items-center justify-center">
+                      <ExternalLink className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm">Product Website</span>
+                  </a>
+                )}
+                {links.slice(0, 3).map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-600 hover:text-teal transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-stone-100 rounded-lg flex items-center justify-center">
+                      {link.type === 'GITHUB' ? (
+                        <Github className="w-4 h-4" />
+                      ) : link.type === 'DOCS' ? (
+                        <FileText className="w-4 h-4" />
+                      ) : (
+                        <LinkIcon className="w-4 h-4" />
+                      )}
+                    </div>
+                    <span className="text-sm">{link.label}</span>
+                  </a>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Project Health */}
+            <motion.div
+              className="bg-teal rounded-xl p-6 text-white"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h3 className="font-bold mb-4">Project Health</h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-teal-100">Progress</span>
+                    <span>
+                      {product.status === 'LIVE' ? '100' : product.status === 'MVP' ? '75' : product.status === 'IN_DEVELOPMENT' ? '50' : '25'}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-teal-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-white rounded-full"
+                      style={{
+                        width: product.status === 'LIVE' ? '100%' : product.status === 'MVP' ? '75%' : product.status === 'IN_DEVELOPMENT' ? '50%' : '25%',
+                      }}
+                    />
+                  </div>
+                </div>
+                {product.usersReached && (
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-teal-100">Users Reached</span>
+                      <span>{product.usersReached.toLocaleString()}</span>
+                    </div>
+                  </div>
                 )}
               </div>
             </motion.div>
+
+            {/* Vote Buttons */}
+            <VoteButtons productId={product.id} />
+
+            {/* Share & Export */}
+            <div className="bg-white rounded-xl p-6 border border-stone-200">
+              <div className="flex flex-col gap-3">
+                <ShareButtons product={product} />
+                <PDFExport product={product} />
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-stone-200 bg-white mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+            <p>© 2024 Renaissance HAVEN Innovation Lab. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <Link href="/about" className="hover:text-teal transition-colors">Privacy Policy</Link>
+              <Link href="/about" className="hover:text-teal transition-colors">Terms of Service</Link>
+              <Link href="/sponsors" className="hover:text-teal transition-colors">Contact Support</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+// Timeline Item Component
+function TimelineItem({ title, date, completed, active }) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="flex flex-col items-center">
+        {completed ? (
+          <CheckCircle2 className={`w-5 h-5 ${active ? 'text-teal' : 'text-green-500'}`} />
+        ) : (
+          <Circle className="w-5 h-5 text-gray-300" />
+        )}
+        <div className="w-px h-8 bg-stone-200 last:hidden" />
+      </div>
+      <div className="flex-1 flex items-center justify-between pb-4">
+        <div>
+          <div className={`font-medium ${active ? 'text-teal' : completed ? 'text-gray-800' : 'text-gray-400'}`}>
+            {title}
+          </div>
+          <div className="text-sm text-gray-500">{date}</div>
+        </div>
+        {active && (
+          <span className="px-2 py-1 bg-teal/10 text-teal text-xs font-semibold rounded">
+            LIVE NOW
+          </span>
+        )}
       </div>
     </div>
   )
