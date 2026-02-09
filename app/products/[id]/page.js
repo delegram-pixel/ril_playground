@@ -667,7 +667,7 @@ export default function ProductProfilePage({ params }) {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200 bg-white mt-12">
+      {/* <footer className="border-t border-stone-200 bg-white mt-12">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
             <p>© 2024 Renaissance HAVEN Innovation Lab. All rights reserved.</p>
@@ -678,7 +678,7 @@ export default function ProductProfilePage({ params }) {
             </div>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   )
 }

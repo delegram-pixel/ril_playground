@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Loader2, ExternalLink, ArrowUpRight, Sparkles, ChevronDown } from 'lucide-react'
+import { Loader2, ExternalLink, ArrowUpRight, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import StatusBadge from '@/components/products/StatusBadge'
 import CategoryBadge from '@/components/products/CategoryBadge'
@@ -247,7 +247,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200 bg-white mt-12">
+      {/* <footer className="border-t border-stone-200 bg-white mt-12">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -267,7 +267,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   )
 }

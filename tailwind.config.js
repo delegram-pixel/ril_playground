@@ -9,23 +9,33 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#1E3A8A',
-          light: '#3B82F6',
-          dark: '#1E40AF',
+          DEFAULT: '#177AE5',
+          light: '#2EA3E5',
+          dark: '#1262B8',
         },
         brown: {
-          DEFAULT: '#D4A574',
-          light: '#E5C9A3',
-          dark: '#B8935F',
+          DEFAULT: '#29CC6E',
+          light: '#4DD88A',
+          dark: '#1FA858',
         },
         teal: {
-          DEFAULT: '#0d9488',
-          light: '#14b8a6',
-          dark: '#0f766e',
+          DEFAULT: '#29BDCC',
+          light: '#4DD0DB',
+          dark: '#1F97A3',
         },
-        success: '#10B981',
+        success: '#29CC6E',
         warning: '#F59E0B',
         alert: '#EF4444',
+        brand: {
+          black: '#212120',
+          gray: {
+            DEFAULT: '#8F9499',
+            dark: '#73797F',
+            light: '#ABAFB2',
+            lighter: '#C7C9CC',
+            lightest: '#E3E4E5',
+          },
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

@@ -19,11 +19,11 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, #1E3A8A 0%, #0d9488 100%);
+    background: linear-gradient(135deg, #177AE5 0%, #29BDCC 100%);
   }
 
   .gradient-overlay {
-    background: linear-gradient(to bottom, rgba(30, 58, 138, 0.8), rgba(13, 148, 136, 0.9));
+    background: linear-gradient(to bottom, rgba(23, 122, 229, 0.8), rgba(41, 189, 204, 0.9));
   }
 
   .card-hover {
@@ -49,15 +49,15 @@
 
   /* Dot Pattern Background */
   .dot-pattern {
-    background-image: radial-gradient(rgba(30, 58, 138, 0.08) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(23, 122, 229, 0.08) 1px, transparent 1px);
     background-size: 20px 20px;
   }
 
   /* Alternative: Grid Pattern */
   .grid-pattern {
     background-image:
-      linear-gradient(rgba(30, 58, 138, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(30, 58, 138, 0.05) 1px, transparent 1px);
+      linear-gradient(rgba(23, 122, 229, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(23, 122, 229, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 

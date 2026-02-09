@@ -179,6 +179,16 @@ CREATE TABLE related_products (
   CHECK (product_id != related_product_id)
 );
 
+-- Votes table (one vote per user per product)
+CREATE TABLE votes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(product_id, user_id)
+);
+
 -- Create indexes for better query performance
 CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_status ON products(status);
@@ -198,6 +208,8 @@ CREATE INDEX idx_product_tech_stack_product ON product_tech_stack(product_id);
 CREATE INDEX idx_product_tech_stack_technology ON product_tech_stack(technology);
 CREATE INDEX idx_related_products_product ON related_products(product_id);
 CREATE INDEX idx_related_products_related ON related_products(related_product_id);
+CREATE INDEX idx_votes_product ON votes(product_id);
+CREATE INDEX idx_votes_user ON votes(user_id);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -276,6 +288,18 @@ CREATE POLICY "Public can view user names" ON users
 -- Team members - public read
 CREATE POLICY "Team members are viewable by everyone" ON team_members
   FOR SELECT USING (true);
+
+-- Votes RLS
+ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Votes are viewable by everyone" ON votes
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can vote" ON votes
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can remove their own votes" ON votes
+  FOR DELETE USING (user_id = auth.uid());
 
 -- Enable RLS on new tables
 ALTER TABLE product_media ENABLE ROW LEVEL SECURITY;
